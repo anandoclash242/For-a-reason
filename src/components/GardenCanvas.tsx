@@ -23,6 +23,7 @@ export interface GardenCanvasRef {
   witherLastCharacter: () => boolean;
   triggerClearFade: (onComplete: () => void) => void;
   spawnButterfliesAt: (x: number, y: number, count?: number) => void;
+  restartGrowthAnimation: () => void;
 }
 
 interface GardenCanvasProps {
@@ -45,6 +46,11 @@ export const GardenCanvas = forwardRef<GardenCanvasRef, GardenCanvasProps>(
     const clearOpacityRef = useRef(1.0);
     const lastTimeRef = useRef(performance.now());
     const animFrameRef = useRef<number | null>(null);
+    const settingsRef = useRef(settings);
+
+    useEffect(() => {
+      settingsRef.current = settings;
+    }, [settings]);
 
     // Regenerate botanical structures whenever text, font, density, or seed changes
     const rebuildGarden = useCallback(() => {
@@ -204,6 +210,24 @@ export const GardenCanvas = forwardRef<GardenCanvasRef, GardenCanvasProps>(
       [palette]
     );
 
+    const restartGrowthAnimation = useCallback(() => {
+      const now = performance.now();
+      charactersRef.current.forEach((char, idx) => {
+        char.spawnTime = now + idx * 80;
+        char.isWithering = false;
+      });
+      fallingParticlesRef.current = [];
+      butterfliesRef.current = [];
+      // Summon a gentle butterfly dance 1.2 seconds into the bloom
+      setTimeout(() => {
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const rect = canvas.getBoundingClientRect();
+          spawnButterfliesAt(rect.width / 2, rect.height / 2, 4);
+        }
+      }, 1200);
+    }, [spawnButterfliesAt]);
+
     // Expose methods to parent
     useImperativeHandle(
       ref,
@@ -213,8 +237,9 @@ export const GardenCanvas = forwardRef<GardenCanvasRef, GardenCanvasProps>(
         witherLastCharacter,
         triggerClearFade,
         spawnButterfliesAt,
+        restartGrowthAnimation,
       }),
-      [cutRandomVine, witherLastCharacter, triggerClearFade, spawnButterfliesAt]
+      [cutRandomVine, witherLastCharacter, triggerClearFade, spawnButterfliesAt, restartGrowthAnimation]
     );
 
     // Resize observer to handle responsive canvas resolution
@@ -316,9 +341,11 @@ export const GardenCanvas = forwardRef<GardenCanvasRef, GardenCanvasProps>(
         }
         fallingParticlesRef.current = aliveParticles;
 
+        const currentSettings = settingsRef.current;
+
         // 4. Render Background
         ctx.save();
-        ctx.fillStyle = palette.canvasBg;
+        ctx.fillStyle = currentSettings.customBgColor || palette.canvasBg;
         ctx.fillRect(0, 0, width, height);
 
         // Subtle ambient botanical background texture/vignette
@@ -349,10 +376,10 @@ export const GardenCanvas = forwardRef<GardenCanvasRef, GardenCanvasProps>(
           charactersRef.current,
           palette,
           timestamp,
-          settings.animationSpeed,
-          settings.reducedMotion,
+          currentSettings.animationSpeed,
+          currentSettings.reducedMotion,
           fallingParticlesRef.current,
-          settings
+          currentSettings
         );
 
         // 6. Render Butterflies
@@ -361,7 +388,7 @@ export const GardenCanvas = forwardRef<GardenCanvasRef, GardenCanvasProps>(
         ctx.restore();
 
         // Continue loop if animated or still growing
-        if (settings.isAnimated || butterfliesRef.current.length > 0 || fallingParticlesRef.current.length > 0) {
+        if (currentSettings.isAnimated || butterfliesRef.current.length > 0 || fallingParticlesRef.current.length > 0) {
           animFrameRef.current = requestAnimationFrame(loop);
         } else {
           // Render on-demand once settled
@@ -377,7 +404,7 @@ export const GardenCanvas = forwardRef<GardenCanvasRef, GardenCanvasProps>(
           cancelAnimationFrame(animFrameRef.current);
         }
       };
-    }, [palette, settings.animationSpeed, settings.reducedMotion, settings.isAnimated]);
+    }, [palette, settings.customBgColor, settings.animationSpeed, settings.reducedMotion, settings.isAnimated]);
 
     // Handle pointer interactions
     const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -404,7 +431,7 @@ export const GardenCanvas = forwardRef<GardenCanvasRef, GardenCanvasProps>(
       <div
         ref={containerRef}
         className="relative w-full h-full flex items-center justify-center overflow-hidden touch-none"
-        style={{ backgroundColor: palette.canvasBg }}
+        style={{ backgroundColor: settings.customBgColor || palette.canvasBg }}
       >
         <canvas
           ref={canvasRef}

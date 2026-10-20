@@ -147,6 +147,7 @@ export interface GardenSettings {
   showTextLetterforms: boolean;
   textStyle: 'calligraphy' | 'subtle' | 'outline';
   textOpacity: number; // 0.0 - 1.0
+  customBgColor?: string;
 }
 
 export interface PosterConfig {

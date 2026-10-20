@@ -30,6 +30,7 @@ interface BottomToolbarProps {
   canRedo: boolean;
   onSaveGarden: () => void;
   onShare: () => void;
+  onOpenBgColor?: () => void;
 }
 
 export const BottomToolbar: React.FC<BottomToolbarProps> = ({
@@ -47,6 +48,7 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = ({
   canRedo,
   onSaveGarden,
   onShare,
+  onOpenBgColor,
 }) => {
   const [showSliders, setShowSliders] = useState(false);
   const isDark = palette.uiTone === 'dark';
@@ -215,6 +217,20 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
+              {onOpenBgColor && (
+                <button
+                  onClick={onOpenBgColor}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs border border-stone-300 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  title="Customize canvas background color"
+                >
+                  <span
+                    className="w-2.5 h-2.5 rounded-full border border-stone-400 dark:border-white/30 shadow-inner"
+                    style={{ backgroundColor: settings.customBgColor || palette.canvasBg }}
+                  />
+                  <span>Canvas BG</span>
+                </button>
+              )}
+
               <button
                 onClick={onCutVine}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs border border-stone-300 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"

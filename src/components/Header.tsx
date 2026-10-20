@@ -4,7 +4,9 @@ import type { Palette as PaletteType } from '../types/garden.ts';
 
 interface HeaderProps {
   currentPalette: PaletteType;
+  currentColor?: string;
   onOpenPalettes: () => void;
+  onOpenBgColor: () => void;
   onOpenPoster: () => void;
   onOpenSaved: () => void;
   onOpenAbout: () => void;
@@ -16,7 +18,9 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   currentPalette,
+  currentColor,
   onOpenPalettes,
+  onOpenBgColor,
   onOpenPoster,
   onOpenSaved,
   onOpenAbout,
@@ -67,6 +71,20 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Palette className="w-3.5 h-3.5 shrink-0" />
           <span>Palettes</span>
+        </button>
+
+        <button
+          onClick={onOpenBgColor}
+          className={`flex items-center gap-1.5 p-1 sm:p-0 transition-colors whitespace-nowrap hover:opacity-100 ${
+            isDark ? 'text-stone-300 hover:text-white' : 'text-stone-600 hover:text-stone-900'
+          }`}
+          title="Change canvas background color"
+        >
+          <span
+            className="w-3.5 h-3.5 rounded-full border border-stone-400 dark:border-white/30 shadow-inner shrink-0"
+            style={{ backgroundColor: currentColor || currentPalette.canvasBg }}
+          />
+          <span>Background</span>
         </button>
 
         <button

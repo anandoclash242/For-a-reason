@@ -25,7 +25,7 @@ export const PosterModal: React.FC<PosterModalProps> = ({
     margin: 60,
     aspectRatio: '1:1',
     showBorders: true,
-    bgColor: palette.canvasBg,
+    bgColor: settings.customBgColor || palette.canvasBg,
     showMetadata: true,
   });
 
@@ -34,10 +34,10 @@ export const PosterModal: React.FC<PosterModalProps> = ({
   const [recordingProgress, setRecordingProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  // Sync background color when palette changes
+  // Sync background color when palette or customBgColor changes
   useEffect(() => {
-    setPosterConfig((prev) => ({ ...prev, bgColor: palette.canvasBg }));
-  }, [palette]);
+    setPosterConfig((prev) => ({ ...prev, bgColor: settings.customBgColor || palette.canvasBg }));
+  }, [palette, settings.customBgColor]);
 
   // Re-render poster whenever config or settings change
   useEffect(() => {

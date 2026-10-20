@@ -45,6 +45,9 @@ export function parseUrlSettings(search: string = window.location.search): Parti
   if (params.has('motion')) {
     settings.reducedMotion = params.get('motion') === 'reduced';
   }
+  if (params.has('bg')) {
+    settings.customBgColor = params.get('bg')!;
+  }
 
   return settings;
 }
@@ -58,6 +61,7 @@ export function encodeUrlSettings(settings: GardenSettings): string {
   if (settings.flowerSize !== DEFAULT_SETTINGS.flowerSize) params.set('flower', settings.flowerSize.toFixed(2));
   if (settings.seed !== DEFAULT_SETTINGS.seed) params.set('seed', settings.seed.toString());
   if (settings.reducedMotion) params.set('motion', 'reduced');
+  if (settings.customBgColor) params.set('bg', settings.customBgColor);
 
   const query = params.toString();
   return query ? `${window.location.pathname}?${query}` : window.location.pathname;

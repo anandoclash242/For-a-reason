@@ -21,6 +21,7 @@ import { AboutModal } from './components/AboutModal.tsx';
 import { ShortcutsModal } from './components/ShortcutsModal.tsx';
 import { Toast } from './components/Toast.tsx';
 import { ExportModal } from './components/ExportModal.tsx';
+import { BgColorModal } from './components/BgColorModal.tsx';
 import { downloadCanvasPng } from './logic/exportMedia.ts';
 
 const BOTANICAL_WORDS = [
@@ -62,6 +63,7 @@ export default function App() {
 
   // Modals state
   const [isPalettesOpen, setIsPalettesOpen] = useState(false);
+  const [isBgColorOpen, setIsBgColorOpen] = useState(false);
   const [isPosterOpen, setIsPosterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isSavedOpen, setIsSavedOpen] = useState(false);
@@ -294,7 +296,7 @@ export default function App() {
   return (
     <div
       className="relative flex flex-col w-screen h-screen overflow-hidden select-none transition-colors duration-500"
-      style={{ backgroundColor: currentPalette.background }}
+      style={{ backgroundColor: settings.customBgColor || currentPalette.background }}
     >
       {/* Toast notifications */}
       <Toast message={toastMessage} palette={currentPalette} />
@@ -302,7 +304,9 @@ export default function App() {
       {/* Top Navigation */}
       <Header
         currentPalette={currentPalette}
+        currentColor={settings.customBgColor}
         onOpenPalettes={() => setIsPalettesOpen(true)}
+        onOpenBgColor={() => setIsBgColorOpen(true)}
         onOpenPoster={() => setIsPosterOpen(true)}
         onOpenSaved={() => setIsSavedOpen(true)}
         onOpenAbout={() => setIsAboutOpen(true)}
@@ -338,6 +342,7 @@ export default function App() {
         canRedo={historyIndex < history.length - 1}
         onSaveGarden={handleSaveGarden}
         onShare={handleShare}
+        onOpenBgColor={() => setIsBgColorOpen(true)}
       />
 
       {/* Modals */}
@@ -384,6 +389,18 @@ export default function App() {
         getCanvas={() => canvasRef.current?.getCanvas() || null}
         text={settings.text}
         onOpenPosterStudio={() => setIsPosterOpen(true)}
+        onRestartGrowthAnimation={() => canvasRef.current?.restartGrowthAnimation()}
+      />
+
+      <BgColorModal
+        isOpen={isBgColorOpen}
+        onClose={() => setIsBgColorOpen(false)}
+        palette={currentPalette}
+        currentColor={settings.customBgColor}
+        onSelectColor={(color) => {
+          updateSettings({ customBgColor: color });
+          showToast(color ? 'Background color updated' : 'Reset to palette default');
+        }}
       />
     </div>
   );
