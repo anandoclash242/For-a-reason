@@ -20,6 +20,7 @@ import { SavedGardensModal } from './components/SavedGardensModal.tsx';
 import { AboutModal } from './components/AboutModal.tsx';
 import { ShortcutsModal } from './components/ShortcutsModal.tsx';
 import { Toast } from './components/Toast.tsx';
+import { ExportModal } from './components/ExportModal.tsx';
 import { downloadCanvasPng } from './logic/exportMedia.ts';
 
 const BOTANICAL_WORDS = [
@@ -62,6 +63,7 @@ export default function App() {
   // Modals state
   const [isPalettesOpen, setIsPalettesOpen] = useState(false);
   const [isPosterOpen, setIsPosterOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [isSavedOpen, setIsSavedOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
@@ -200,13 +202,10 @@ export default function App() {
     }
   }, [showToast]);
 
-  // Download artwork directly as PNG
+  // Open Export choices (Animated Video or PNG Still)
   const handleDownload = useCallback(() => {
-    const canvas = canvasRef.current?.getCanvas();
-    if (!canvas) return;
-    downloadCanvasPng(canvas, `bloom-type-${settings.text || 'garden'}-${Date.now()}.png`);
-    showToast('Artwork downloaded!');
-  }, [settings.text, showToast]);
+    setIsExportOpen(true);
+  }, []);
 
   // Fullscreen toggle
   const handleToggleFullscreen = useCallback(() => {
@@ -376,6 +375,15 @@ export default function App() {
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
         palette={currentPalette}
+      />
+
+      <ExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        palette={currentPalette}
+        getCanvas={() => canvasRef.current?.getCanvas() || null}
+        text={settings.text}
+        onOpenPosterStudio={() => setIsPosterOpen(true)}
       />
     </div>
   );

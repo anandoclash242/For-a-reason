@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Download, Video, Eye, EyeOff, Sparkles, RefreshCw } from 'lucide-react';
 import type { GardenSettings, Palette, PosterConfig } from '../types/garden.ts';
-import { renderPosterToCanvas, downloadCanvasPng, recordCanvasVideo } from '../logic/exportMedia.ts';
+import { renderPosterToCanvas, downloadCanvasPng, recordCanvasVideo, downloadBlob } from '../logic/exportMedia.ts';
 
 interface PosterModalProps {
   isOpen: boolean;
@@ -73,27 +73,41 @@ export const PosterModal: React.FC<PosterModalProps> = ({
     if (!canvasRef.current) return;
     setIsRecording(true);
     setRecordingProgress(0);
-    setStatusMessage('Recording video capture loop (3s)...');
+    setStatusMessage('Recording animated poster video (3.5s)...');
 
     try {
-      const blob = await recordCanvasVideo(canvasRef.current, 3, (p) => {
-        setRecordingProgress(Math.round(p * 100));
-      });
+      const { blob, extension } = await recordCanvasVideo(
+        canvasRef.current,
+        3.5,
+        (p) => {
+          setRecordingProgress(Math.round(p * 100));
+        },
+        (timestamp) => {
+          // Continuously render animated frame during recording
+          if (canvasRef.current) {
+            renderPosterToCanvas(
+              canvasRef.current,
+              settings,
+              posterConfig,
+              palette,
+              1080,
+              1080,
+              timestamp
+            );
+          }
+        }
+      );
 
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = `bloom-type-animated-${Date.now()}.webm`;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
-      setStatusMessage('Animated video exported successfully!');
+      const filename = `bloom-type-poster-${Date.now()}.${extension}`;
+      downloadBlob(blob, filename);
+      setStatusMessage(`Animated ${extension.toUpperCase()} video downloaded successfully!`);
     } catch (err: any) {
       console.warn('Video recording error:', err);
-      setStatusMessage('Animated capture unsupported in this browser. Downloading high-res PNG instead.');
+      setStatusMessage('Video recording unsupported in this browser. Downloading high-res PNG instead.');
       handleDownloadHighResPng();
     } finally {
       setIsRecording(false);
-      setTimeout(() => setStatusMessage(null), 3000);
+      setTimeout(() => setStatusMessage(null), 3500);
     }
   };
 
