@@ -1,0 +1,7 @@
+{
+  "name": "BLOOM TYPE — Interactive Generative Typography Garden",
+  "description": "Transforms user-typed text into a living botanical garden with procedural vines, leaves, stems, and cursor-aware blooming roses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
